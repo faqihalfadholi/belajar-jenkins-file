@@ -69,6 +69,7 @@ pipeline {
                         echo "Processing fruit: ${fruit}"
                     }
 
+
                     def a = 5
                     def b = 3
                     def sum = a + b
