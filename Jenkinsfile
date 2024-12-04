@@ -91,36 +91,56 @@ pipeline {
             }
         }
     }
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-            script {
-                def currentDate = new Date()
-                def formattedDate = currentDate.format("yyyy-MM-dd HH:mm:ss")
+        post {
+            success {
+                echo 'Pipeline completed successfully!'
+                script {
+                    def currentDate = new Date()
+                    def formattedDate = currentDate.format("yyyy-MM-dd HH:mm:ss")
 
-                slackSend(channel: '#jenkins-notification', message: "Pipeline success: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${formattedDate}")
+                    // Slack notification
+                    try {
+                        slackSend(channel: '#jenkins-notification', message: "Pipeline success: ${env.JOB_NAME} #${env.BUILD_NUMBER} ${formattedDate}")
+                    } catch (Exception e) {
+                        echo "Error sending Slack notification: ${e.message}"
+                    }
 
-                mail to: 'faqihalfadholi@gmail.com',
-                     subject: "Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                     body: "The build was successful! Check it out at ${env.BUILD_URL} #${formattedDate}"
+                    // Email notification
+                    try {
+                        mail to: 'faqihalfadholi@gmail.com',
+                             subject: "Jenkins Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             body: "The build was successful! Check it out at ${env.BUILD_URL} #${formattedDate}"
+                    } catch (Exception e) {
+                        echo "Error sending email: ${e.message}"
+                    }
+                }
+            }
+            failure {
+                echo 'Pipeline failed. Please check the logs.'
+                script {
+                    def currentDate = new Date()
+                    def formattedDate = currentDate.format("yyyy-MM-dd HH:mm:ss")
+
+                    // Slack notification
+                    try {
+                        slackSend(channel: '#jenkins-notification', message: "Pipeline failed: ${env.JOB_NAME} #${env.BUILD_NUMBER} #${formattedDate}")
+                    } catch (Exception e) {
+                        echo "Error sending Slack notification: ${e.message}"
+                    }
+
+                    // Email notification
+                    try {
+                        mail to: 'faqihalfadholi@gmail.com',
+                             subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             body: "The build has failed. Please check the logs at ${env.BUILD_URL} #${formattedDate}"
+                    } catch (Exception e) {
+                        echo "Error sending email: ${e.message}"
+                    }
+                }
+            }
+            always {
+                echo 'Cleaning up...'
+                cleanWs()
             }
         }
-        failure {
-            echo 'Pipeline failed. Please check the logs.'
-            script {
-                def currentDate = new Date()
-                def formattedDate = currentDate.format("yyyy-MM-dd HH:mm:ss")
-
-                slackSend(channel: '#jenkins-notification', message: "Pipeline failed: ${env.JOB_NAME} #${env.BUILD_NUMBER} #${formattedDate}")
-
-                mail to: 'faqihalfadholi@gmail.com',
-                     subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER} ",
-                     body: "The build has failed. Please check the logs at ${env.BUILD_URL} #${formattedDate}"
-            }
-        }
-        always {
-            echo 'Cleaning up...'
-            cleanWs()
-        }
-    }
 }
