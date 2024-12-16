@@ -175,7 +175,7 @@ pipeline {
             }
             always {
                 echo 'Cleaning up...'
-                // cleanWs()
+                cleanWs()
             }
         }
 }
