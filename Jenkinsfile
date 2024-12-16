@@ -26,7 +26,8 @@ pipeline {
                     echo "Workspace: ${env.WORKSPACE}"
                     echo "Node Name: ${env.NODE_NAME}"
                     echo "App User : ${APP_USR}"
-                    echo "App Password : ${APP_PSW}"
+                    // echo "App Password : ${APP_PSW}" ini bakal ada warning dan pass akan jadi ****
+                    sh('echo "App Password : $APP_PSW" > "rahasia.txt"')
                 }
             }
         }
