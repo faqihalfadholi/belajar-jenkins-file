@@ -1,5 +1,10 @@
 pipeline {
     agent any
+
+    environment {
+        AUTHOR = "Muhammad Faqih Al Fadholi"
+        EMAIL = "faqihalfadholi@gmail.com"
+    }
     stages {
         stage('Preparation') {
             steps {
@@ -12,6 +17,8 @@ pipeline {
         stage('Environment Info') {
             steps {
                 script {
+                    echo "Author : ${AUTHOR}"
+                    echo "Email : ${EMAIL}"
                     echo "Job Name: ${env.JOB_NAME}"
                     echo "Build Number: ${env.BUILD_NUMBER}"
                     echo "Workspace: ${env.WORKSPACE}"
