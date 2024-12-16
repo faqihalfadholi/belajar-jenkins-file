@@ -24,8 +24,8 @@ pipeline {
                     echo "Build Number: ${env.BUILD_NUMBER}"
                     echo "Workspace: ${env.WORKSPACE}"
                     echo "Node Name: ${env.NODE_NAME}"
-                    echo "App User : ${APP.USR}"
-                    echo "App Password : ${APP.PSW}"
+                    echo "App User : ${APP_USR}"
+                    echo "App Password : ${APP_PSW}"
                 }
             }
         }
