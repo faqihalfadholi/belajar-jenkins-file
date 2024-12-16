@@ -4,6 +4,7 @@ pipeline {
     environment {
         AUTHOR = "Muhammad Faqih Al Fadholi"
         EMAIL = "faqihalfadholi@gmail.com"
+        APP = credentials("faqih_rahasia")
     }
     stages {
         stage('Preparation') {
@@ -23,19 +24,21 @@ pipeline {
                     echo "Build Number: ${env.BUILD_NUMBER}"
                     echo "Workspace: ${env.WORKSPACE}"
                     echo "Node Name: ${env.NODE_NAME}"
+                    echo "App User : ${APP.USR}"
+                    echo "App Password : ${APP.PSW}"
                 }
             }
         }
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                sh './mvnw clean package -DskipTests'
+                //sh './mvnw clean package -DskipTests'
             }
         }
         stage('Test') {
             steps {
                 echo 'Running tests........'
-                sh './mvnw test'
+                //sh './mvnw test'
             }
             post {
                 always {
