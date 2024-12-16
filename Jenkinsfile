@@ -9,6 +9,16 @@ pipeline {
                 sh './mvnw -version'
             }
         }
+        stage('Environment Info') {
+            steps {
+                script {
+                    echo "Job Name: ${env.JOB_NAME}"
+                    echo "Build Number: ${env.BUILD_NUMBER}"
+                    echo "Workspace: ${env.WORKSPACE}"
+                    echo "Node Name: ${env.NODE_NAME}"
+                }
+            }
+        }
         stage('Build') {
             steps {
                 echo 'Building the project...'
@@ -23,6 +33,14 @@ pipeline {
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Build Status') {
+            steps {
+                script {
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - Custom Build Name"
+                    echo "Current Build Status: ${currentBuild.currentResult}"
                 }
             }
         }
