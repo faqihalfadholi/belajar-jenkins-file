@@ -16,12 +16,6 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Environment Info') {
             steps {
                 script {
@@ -175,7 +169,7 @@ pipeline {
             }
             always {
                 echo 'Cleaning up...'
-                cleanWs()
+                // cleanWs()
             }
         }
 }
