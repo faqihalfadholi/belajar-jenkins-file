@@ -9,7 +9,7 @@ pipeline {
         stage('Preparation') {
             steps {
                 sh 'chmod +x mvnw'
-                echo 'Preparing the environment...'
+                echo 'Preparing the environment.......'
                 sh 'java -version'
                 sh './mvnw -version'
             }
