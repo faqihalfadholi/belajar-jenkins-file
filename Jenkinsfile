@@ -15,6 +15,13 @@ pipeline {
                 sh './mvnw -version'
             }
         }
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Environment Info') {
             steps {
                 script {
