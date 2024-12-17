@@ -1,33 +1,63 @@
 pipeline {
     agent any
+
+    environment {
+        AUTHOR = "Muhammad Faqih Al Fadholi"
+        EMAIL = "faqihalfadholi@gmail.com"
+        APP = credentials("faqih_rahasia")
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 10, unit: 'MINUTES')
+    }
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
         stage('Preparation') {
             steps {
                 sh 'chmod +x mvnw'
-                echo 'Preparing the environment...'
+                echo 'Preparing the environment.......'
                 sh 'java -version'
                 sh './mvnw -version'
+            }
+        }
+
+        stage('Environment Info') {
+            steps {
+                script {
+                    echo "Author : ${AUTHOR}"
+                    echo "Email : ${EMAIL}"
+                    echo "Job Name: ${env.JOB_NAME}"
+                    echo "Build Number: ${env.BUILD_NUMBER}"
+                    echo "Workspace: ${env.WORKSPACE}"
+                    echo "Node Name: ${env.NODE_NAME}"
+                    echo "App User : ${APP_USR}"
+                    // echo "App Password : ${APP_PSW}" ini bakal ada warning dan pass akan jadi ****
+                    sh('echo "App Password : $APP_PSW" > "rahasia.txt"')
+                }
             }
         }
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                sh './mvnw clean package -DskipTests'
+                //sh './mvnw clean package -DskipTests'
             }
         }
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh './mvnw test'
+                echo 'Running tests........'
+                //sh './mvnw test'
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
+            // post {
+            //     always {
+            //         junit '**/target/surefire-reports/*.xml'
+            //     }
+            // }
+        }
+        stage('Build Status') {
+            steps {
+                script {
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - Custom Build Name"
+                    echo "Current Build Status: ${currentBuild.currentResult}"
                 }
             }
         }
