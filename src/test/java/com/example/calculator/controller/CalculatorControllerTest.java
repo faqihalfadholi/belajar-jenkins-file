@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.ui.Model;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,43 +25,61 @@ class CalculatorControllerTest {
     private CalculatorController calculatorController;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        calculatorController = new CalculatorController(calculationHistoryService);
-    }
-
-    @Test
-    void testShowCalculator() {
-        List<CalculationHistory> historyList = new ArrayList<>();
-        when(calculationHistoryService.getAllCalculations()).thenReturn(historyList);
-
-        String viewName = calculatorController.showCalculator(model);
-
-        assertEquals("calculator", viewName);
-        verify(model).addAttribute("history", historyList);
+    void setUp() throws Exception {
+        try (AutoCloseable autoCloseable = MockitoAnnotations.openMocks(this)) {
+            calculatorController = new CalculatorController(calculationHistoryService);
+        }
     }
 
     @Test
     void testCalculate() {
         String expression = "2 + 2";
-        when(calculationHistoryService.getAllCalculations()).thenReturn(new ArrayList<>());
+        CalculationHistory expectedHistory = new CalculationHistory(expression, 4.0);
+        when(calculationHistoryService.saveCalculation(any(CalculationHistory.class))).thenReturn(expectedHistory);
 
-        String viewName = calculatorController.calculate(expression, model);
+        CalculationHistory result = calculatorController.calculate(expression);
 
-        assertEquals("calculator", viewName);
-        verify(model).addAttribute("result", 4.0);
-        verify(model).addAttribute("expression", expression);
+        assertNotNull(result);
+        assertEquals(expression, result.getExpression());
+        assertEquals(4.0, result.getResult(), 0.001);
         verify(calculationHistoryService).saveCalculation(any(CalculationHistory.class));
     }
 
     @Test
     void testCalculateWithInvalidExpression() {
         String expression = "2 +";
-        when(calculationHistoryService.getAllCalculations()).thenReturn(new ArrayList<>());
 
-        String viewName = calculatorController.calculate(expression, model);
+        CalculationHistory result = calculatorController.calculate(expression);
+
+        assertNull(result);
+        verify(calculationHistoryService, never()).saveCalculation(any(CalculationHistory.class));
+    }
+
+    @Test
+    void testShowCalculator() {
+        List<CalculationHistory> mockHistory = Arrays.asList(
+                new CalculationHistory("1 + 1", 2.0),
+                new CalculationHistory("2 * 3", 6.0)
+        );
+        when(calculationHistoryService.getAllCalculations()).thenReturn(mockHistory);
+
+        String viewName = calculatorController.showCalculator(model);
 
         assertEquals("calculator", viewName);
-        verify(model).addAttribute(eq("error"), anyString());
+        verify(model).addAttribute("history", mockHistory);
+    }
+
+    @Test
+    void testGetHistory() {
+        List<CalculationHistory> mockHistory = Arrays.asList(
+                new CalculationHistory("1 + 1", 2.0),
+                new CalculationHistory("2 * 3", 6.0)
+        );
+        when(calculationHistoryService.getAllCalculations()).thenReturn(mockHistory);
+
+        List<CalculationHistory> result = calculatorController.getHistory();
+
+        assertEquals(mockHistory, result);
+        verify(calculationHistoryService).getAllCalculations();
     }
 }

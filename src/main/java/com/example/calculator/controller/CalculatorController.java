@@ -47,8 +47,7 @@ public class CalculatorController {
     public CalculationHistory calculate(@RequestParam("expression") String expression) {
         try {
             double result = evaluateExpression(expression);
-            CalculationHistory calculationHistory = saveCalculation(expression, result);
-            return calculationHistory;
+            return saveCalculation(expression, result);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error during calculation", e);
             return null;
