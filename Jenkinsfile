@@ -39,7 +39,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                //sh './mvnw clean package -DskipTests'
+                sh './mvnw clean package -DskipTests'
             }
         }
         stage('Test') {
