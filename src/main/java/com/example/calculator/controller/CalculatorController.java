@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -42,21 +43,16 @@ public class CalculatorController {
     }
 
     @PostMapping("/calculate")
-    public String calculate(@RequestParam("expression") String expression, Model model) {
+    @ResponseBody
+    public CalculationHistory calculate(@RequestParam("expression") String expression) {
         try {
             double result = evaluateExpression(expression);
-            saveCalculation(expression, result);
-            updateModelWithResult(model, expression, result);
-        } catch (ScriptException e) {
-            LOGGER.log(Level.WARNING, "Invalid expression: " + expression, e);
-            model.addAttribute("error", "Invalid expression: " + e.getMessage());
+            CalculationHistory calculationHistory = saveCalculation(expression, result);
+            return calculationHistory;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error during calculation", e);
-            model.addAttribute("error", "An unexpected error occurred");
+            return null;
         }
-
-        updateModelWithHistory(model);
-        return "calculator";
     }
 
     private double evaluateExpression(String expression) throws ScriptException {
@@ -64,24 +60,20 @@ public class CalculatorController {
         if (result instanceof Number) {
             return ((Number) result).doubleValue();
         }
-        throw new ScriptException("Expression did not result in a number");
+        throw new ScriptException("Invalid expression result");
     }
 
-    private void saveCalculation(String expression, double result) {
+    private CalculationHistory saveCalculation(String expression, double result) {
         CalculationHistory calculationHistory = new CalculationHistory();
         calculationHistory.setExpression(expression);
         calculationHistory.setResult(result);
-        calculationHistory.setTimestamp(LocalDateTime.now());  // Add this line
-        calculationHistoryService.saveCalculation(calculationHistory);
+        calculationHistory.setTimestamp(LocalDateTime.now());
+        return calculationHistoryService.saveCalculation(calculationHistory);
     }
 
-    private void updateModelWithResult(Model model, String expression, double result) {
-        model.addAttribute("result", result);
-        model.addAttribute("expression", expression);
-    }
-
-    private void updateModelWithHistory(Model model) {
-        List<CalculationHistory> history = calculationHistoryService.getAllCalculations();
-        model.addAttribute("history", history);
+    @GetMapping("/history")
+    @ResponseBody
+    public List<CalculationHistory> getHistory() {
+        return calculationHistoryService.getAllCalculations();
     }
 }

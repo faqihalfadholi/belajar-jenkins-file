@@ -25,6 +25,11 @@ public class CalculationHistory {
         this.timestamp = LocalDateTime.now();
     }
 
+    public CalculationHistory(String expression, Double result) {
+        this.expression = expression;
+        this.result = result;
+        this.timestamp = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -56,5 +61,24 @@ public class CalculationHistory {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void prePersist() {
+        if (this.timestamp == null) {
+            this.timestamp = LocalDateTime.now();
+        }
+    }
+
+    // toString method untuk debugging
+    @Override
+    public String toString() {
+        return "CalculationHistory{" +
+                "id=" + id +
+                ", expression='" + expression + '\'' +
+                ", result=" + result +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

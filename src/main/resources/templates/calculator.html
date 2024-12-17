@@ -6,133 +6,374 @@
     <title>Kalkulator Sederhana</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
         }
-
-        .calculator-container {
-            max-width: 600px;
-            margin: auto;
+        .calculator-container, .history-container {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
-
         .calculator-header {
             background-color: #007bff;
             color: #ffffff;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
             margin-bottom: 20px;
         }
-
         .calculator-header h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
         }
-
-        .form-control {
-            font-size: 1rem;
-            height: 50px;
-            padding: 10px 15px;
-        }
-
-        .btn-primary {
-            height: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .result-box {
-            margin-top: 20px;
-            padding: 20px;
-            border: 2px solid #28a745;
+        .calculator {
+            background-color: #f4f4f4;
             border-radius: 10px;
-            background-color: #e9f7ef;
-            color: #155724;
-            text-align: center;
-            font-size: 1.2rem;
+            padding: 20px;
         }
-
-        .history-container {
-            margin-top: 40px;
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .btn-calc {
+            width: 100%;
+            height: 50px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+        }
+        .btn-calc:hover {
+            background-color: #d4d4d4;
+        }
+        .btn-calc.operator {
+            background-color: #ff9800;
+            color: white;
+        }
+        .btn-calc.operator:hover {
+            background-color: #f57c00;
+        }
+        .btn-calc.equals {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-calc.equals:hover {
+            background-color: #45a049;
+        }
         .history-title {
             text-align: center;
             margin-bottom: 20px;
         }
-
         .history-table {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            overflow-y: auto;
         }
-
-        .table th, .table td {
-            vertical-align: middle;
+        .calculator-container, .history-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .calculator {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .buttons {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .result-box {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
             text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .result-box h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #495057;
+        }
+        #result {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .history-table {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: calc(100% - 60px);
+        }
+        #display.faded {
+            color: rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
 <div class="container py-5">
-    <!-- Kalkulator Container -->
-    <div class="calculator-container">
-        <!-- Header -->
-        <div class="calculator-header">
-            <h1><i class="fas fa-calculator"></i> Kalkulator Sederhana</h1>
-        </div>
-        <!-- Form Perhitungan -->
-        <form action="/calculate" method="post">
-            <div class="mb-3">
-                <label for="expression" class="form-label">Masukkan Ekspresi</label>
-                <input type="text" id="expression" name="expression" class="form-control"
-                       placeholder="Contoh: 5+3*2" th:value="${expression}" required>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="calculator-container">
+                <div class="calculator-header">
+                    <h1><i class="fas fa-calculator"></i> Kalkulator Sederhana</h1>
+                </div>
+                <div class="calculator">
+                    <input type="text" id="display" readonly aria-label="Display kalkulator">
+                    <div class="buttons">
+                        <button class="btn-calc function" data-action="clear">C</button>
+                        <button class="btn-calc function" data-action="delete">DEL</button>
+                        <button class="btn-calc operator" data-action="percent">%</button>
+                        <button class="btn-calc operator" data-action="divide">/</button>
+                        <button class="btn-calc">7</button>
+                        <button class="btn-calc">8</button>
+                        <button class="btn-calc">9</button>
+                        <button class="btn-calc operator" data-action="multiply">*</button>
+                        <button class="btn-calc">4</button>
+                        <button class="btn-calc">5</button>
+                        <button class="btn-calc">6</button>
+                        <button class="btn-calc operator" data-action="subtract">-</button>
+                        <button class="btn-calc">1</button>
+                        <button class="btn-calc">2</button>
+                        <button class="btn-calc">3</button>
+                        <button class="btn-calc operator" data-action="add">+</button>
+                        <button class="btn-calc" data-action="decimal">.</button>
+                        <button class="btn-calc">0</button>
+                        <button class="btn-calc function" data-action="negate">+/-</button>
+                        <button class="btn-calc equals" data-action="calculate">=</button>
+                    </div>
+                </div>
+                <div class="result-box mt-4" id="result-box" style="display: none;">
+                    <h2>Hasil Perhitungan:</h2>
+                    <span id="result" class="text-success">0.0</span>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-equals"></i> Hitung
-            </button>
-        </form>
-        <!-- Hasil -->
-        <div class="result-box mt-4" th:if="${result}">
-            <h2>Hasil: <span th:text="${result}" class="text-success">0.0</span></h2>
         </div>
-        <!-- Error -->
-        <div th:if="${error}" class="alert alert-danger mt-3" role="alert">
-            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
-        </div>
-    </div>
-
-    <!-- Riwayat Perhitungan -->
-    <div class="history-container">
-        <h3 class="history-title">Riwayat Perhitungan</h3>
-        <div class="table-responsive history-table">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Ekspresi</th>
-                    <th>Hasil</th>
-                    <th>Waktu</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="calc : ${history}">
-                    <td th:text="${calc.id}"></td>
-                    <td th:text="${calc.expression}"></td>
-                    <td th:text="${calc.result}"></td>
-                    <td th:text="${#temporals.format(calc.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="col-md-6">
+            <div class="history-container">
+                <h3 class="history-title">Riwayat Perhitungan</h3>
+                <div class="table-responsive history-table">
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Ekspresi</th>
+                            <th>Hasil</th>
+                            <th>Waktu</th>
+                        </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const display = document.getElementById('display');
+        const buttons = document.querySelectorAll('.btn-calc');
+        const resultBox = document.getElementById('result-box');
+        const resultSpan = document.getElementById('result');
+
+        let currentInput = '0';
+        let currentOperation = null;
+        let previousInput = '';
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.action;
+                const buttonContent = button.textContent;
+
+                if (!action) {
+                    appendNumber(buttonContent);
+                } else {
+                    handleAction(action, buttonContent);
+                }
+                updateDisplay();
+            });
+        });
+
+        // function appendNumber(number) {
+        //     if (currentInput === '0' && number !== '.') {
+        //         currentInput = number;
+        //     } else {
+        //         currentInput += number;
+        //     }
+        // }
+
+        function handleAction(action, content) {
+            switch(action) {
+                case 'clear':
+                    clear();
+                    break;
+                case 'delete':
+                    deleteLastChar();
+                    break;
+                case 'calculate':
+                    calculate();
+                    break;
+                case 'decimal':
+                    appendDecimal();
+                    break;
+                case 'negate':
+                    negateNumber();
+                    break;
+                case 'percent':
+                    percent();
+                    break;
+                default:
+                    setOperation(content);
+            }
+        }
+
+        function clear() {
+            currentInput = '0';
+            previousInput = '';
+            currentOperation = null;
+            resultBox.style.display = 'none';
+        }
+
+        function deleteLastChar() {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === '') {
+                currentInput = '0';
+            }
+        }
+
+        function setOperation(operation) {
+            if (currentInput === '') return;
+            if (previousInput !== '') {
+                calculate();
+            }
+            currentOperation = operation;
+            previousInput = currentInput;
+            display.classList.add('faded');
+        }
+
+        function appendNumber(number) {
+            if (display.classList.contains('faded')) {
+                currentInput = '';
+                display.classList.remove('faded');
+            }
+            if (currentInput === '0' && number !== '.') {
+                currentInput = number;
+            } else {
+                currentInput += number;
+            }
+        }
+
+        function calculate() {
+            let computation;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            if (isNaN(prev) || isNaN(current)) return;
+            switch (currentOperation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    computation = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            const expression = `${prev} ${currentOperation} ${current}`;
+            currentInput = computation.toString();
+            currentOperation = null;
+            previousInput = '';
+            resultSpan.textContent = currentInput;
+            resultBox.style.display = 'block';
+            sendCalculation(expression, computation);
+        }
+
+        function appendDecimal() {
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+        }
+
+        function negateNumber() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+        }
+
+        function percent() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+        }
+
+        function updateDisplay() {
+            display.value = currentInput;
+        }
+
+        function sendCalculation(expression, result) {
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `expression=${encodeURIComponent(expression)}&result=${encodeURIComponent(result)}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Calculation saved:', data);
+                    updateHistory();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function updateHistory() {
+            fetch('/history')
+                .then(response => response.json())
+                .then(history => {
+                    const historyTableBody = document.getElementById('historyTableBody');
+                    historyTableBody.innerHTML = '';
+                    history.forEach(calc => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td>${calc.id}</td>
+                        <td>${calc.expression}</td>
+                        <td>${calc.result}</td>
+                        <td>${new Date(calc.timestamp).toLocaleString()}</td>
+                    `;
+                        historyTableBody.prepend(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching history:', error));
+        }
+
+        updateHistory();
+    });
+</script>
 </body>
 </html>
